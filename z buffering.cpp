@@ -1,12 +1,14 @@
 #include <SDL/SDL.h>
 #include <cmath>
+#include <algorithm>
+using namespace std;
 const int SCREEN_WIDTH = 640, SCREEN_HEIGHT = 480;
 void setpixel(SDL_Surface * screen, int x, int y, Uint32 color) {
   if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) return ;
   Uint32 * pixels = (Uint32*)screen->pixels;
   pixels[y * SCREEN_WIDTH + x] = color;
 }
-
+double z_buffer[SCREEN_HEIGHT][SCREEN_WIDTH];
 struct Camera {
   double ze, zv, phi, theta, gama;
   Camera() : ze(-500), zv(-200), phi(0), theta(0), gama(0) { }
@@ -41,7 +43,7 @@ struct Point {
     return Point(xp, yp, cam.zv);
   }
   Point to2dview() const {
-    return Point(x + SCREEN_HEIGHT / 2, y + SCREEN_HEIGHT / 2, z);
+    return Point(x + SCREEN_WIDTH / 2, y + SCREEN_HEIGHT / 2, z);
   }
   //vector math
   Point operator-(const Point & b) const {
@@ -50,16 +52,68 @@ struct Point {
   double magnitude() const {
     return sqrt(x * x + y * y + z * z);
   }
+  double crossZ(const Point & b) const {//returns only the z component of the cross product
+    return x * b.y - y * b.x;
+  }
+  Point cross(const Point & b) const {
+    double rx = y * b.z - z * b.y;
+    double ry = -(x * b.z - z * b.x);
+    double rz = x * b.y - y * b.x;
+    return Point(rx, ry, rz);
+  }
 };
 void line(SDL_Surface * screen, const Point & a, const Point & b, Uint32 color) {
   double dist = (b - a).magnitude();
   double theta = atan2(b.y - a.y, b.x - a.x);
   double fa = cos(theta), fb = sin(theta);
-  for (double r = 0; r <= dist; r += 0.5) {
+  for (double r = 0; r <= dist; r += 0.1) {
     double lx = a.x + fa * r, ly = a.y + fb * r;
     setpixel(screen, lx, ly, color);
   }
 }
+bool pointInsideTriangle(const Point & p, const Point & a, const Point & b, const Point & c) {
+  double x = (p - a).crossZ(b - a);
+  double y = (p - b).crossZ(c - b);
+  double z = (p - c).crossZ(a - c);
+  return (x >= 0 && y >= 0 && z >= 0) || (x < 0 && y < 0 && z < 0);
+}
+//z buffering implemented here
+void triangleFill(SDL_Surface * screen, const Point & a, const Point & b, const Point & c, Uint32 color, const Camera & cam) {
+
+  Point vca = a.toVC(cam), vcb = b.toVC(cam), vcc = c.toVC(cam);
+  Point normal = (vcb - vca).cross(vcc - vca); //obtain the triangle normal, i.e. a, b, c components of the plane
+  double d = -(normal.x * vca.x + normal.y * vca.y + normal.z * vca.z); // ax + by + cz + d = 0, d = -(ax + by + cz), put point vca
+  Point pa = vca.project(cam).to2dview(), pb = vcb.project(cam).to2dview(), pc = vcc.project(cam).to2dview();
+  double minx = min(pa.x, min(pb.x, pc.x)), miny = min(pa.y, min(pb.y, pc.y));
+  double maxx = max(pa.x, max(pb.x, pc.x)), maxy = max(pa.y, max(pb.y, pc.y));
+  
+  for (int i = miny; i <= maxy; ++i) {
+    if (i < 0) continue;
+    if (i >= SCREEN_HEIGHT) break;
+    bool inside = 0;
+    for (int j = max(minx, 0.0); j <= maxx; ++j) {
+      if (j >= SCREEN_WIDTH) break;
+      if (pointInsideTriangle(Point(j, i, 0), pa, pb, pc)) {
+	inside = 1;
+	double D = cam.ze - cam.zv;
+	double xp = j - SCREEN_WIDTH / 2, yp = i - SCREEN_HEIGHT / 2;
+	double F = normal.x * xp + normal.y * yp - normal.z * D;
+	double point_z = ((normal.x * xp + normal.y * yp) * cam.ze + d * D) / F;
+	if (point_z < z_buffer[i][j]) {
+	  z_buffer[i][j] = point_z;
+	  setpixel(screen, j, i, color);
+	}
+      } else if (inside) break;
+    }
+  }
+}
+struct Triangle {
+  Point a, b, c;
+  Triangle(const Point & pa, const Point & pb, const Point & pc) : a(pa), b(pb), c(pc) { }
+  void draw(SDL_Surface * screen, Uint32 color, const Camera & cam) const {
+    triangleFill(screen, a, b, c, color, cam);
+  }
+};
 struct Cuboid {
   Point a, b, c, d, e, f, g, h;
   Cuboid(double ox, double oy, double oz, double length, double breadth, double height) {
@@ -73,39 +127,38 @@ struct Cuboid {
     h = Point(ox, oy + breadth, oz + height);
   }
   void draw(SDL_Surface * screen, const Camera & cam) const {
-    Point pa = a.toVC(cam).project(cam).to2dview();
-    Point pb = b.toVC(cam).project(cam).to2dview();
-    Point pc = c.toVC(cam).project(cam).to2dview();
-    Point pd = d.toVC(cam).project(cam).to2dview();
-    Point pe = e.toVC(cam).project(cam).to2dview();
-    Point pf = f.toVC(cam).project(cam).to2dview();
-    Point pg = g.toVC(cam).project(cam).to2dview();
-    Point ph = h.toVC(cam).project(cam).to2dview();
-    line(screen, pa, pb, 0xff0000);
-    line(screen, pb, pc, 0xff0000);
-    line(screen, pc, pd, 0xff0000);
-    line(screen, pd, pa, 0xff0000);
+    triangleFill(screen, a, b, c, 0xff0000, cam);
+    triangleFill(screen, a, d, c, 0xff0000, cam);
+    triangleFill(screen, e, f, g, 0x00ff00, cam);
+    triangleFill(screen, e, h, g, 0x00ff00, cam);
     
-    line(screen, pe, pf, 0xff0000);
-    line(screen, pf, pg, 0xff0000);
-    line(screen, pg, ph, 0xff0000);
-    line(screen, ph, pe, 0xff0000);
+    triangleFill(screen, a, d, e, 0xff00ff, cam);
+    triangleFill(screen, h, d, e, 0xff00ff, cam);
+
+    triangleFill(screen, b, f, g, 0, cam);
+    triangleFill(screen, c, b, g, 0, cam);
     
-    line(screen, pa, pe, 0xff0000);
-    line(screen, pb, pf, 0xff0000);
-    line(screen, pc, pg, 0xff0000);
-    line(screen, pd, ph, 0xff0000);
+    triangleFill(screen, a, e, b, 0x0000ff, cam);
+    triangleFill(screen, e, b, f, 0x0000ff, cam);
+    
+    
     
   }
 
 };
+void clearZBuffer() {
+  for (int i =  0; i < SCREEN_HEIGHT; ++i) {
+    for (int j = 0; j < SCREEN_WIDTH; ++j) z_buffer[i][j] = 999999999.0; //infinity
+  }
+}
+
 int main(int argc, char ** argv) {
   SDL_Init(SDL_INIT_EVERYTHING);
   SDL_Surface * screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 32, SDL_SWSURFACE);
   SDL_Event event;
   bool run = 1;
-  Cuboid cb(0, 0, 0, 50, 50, 50);
   Camera camera;
+  Cuboid cb(0, 0, 0, 50, -50, 100);
   while (run) {
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) run = 0;
@@ -123,9 +176,10 @@ int main(int argc, char ** argv) {
     
     
     //rendering
-
     SDL_FillRect(screen, &screen->clip_rect, 0xFFFFFF);
+    clearZBuffer();
     cb.draw(screen, camera);
+
     SDL_Flip(screen);
     SDL_Delay(10);
   }
