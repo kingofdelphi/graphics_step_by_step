@@ -1,0 +1,121 @@
+From the parametric line equation, after assuming that the eye is placed on the z-axis, eye_position(0, 0, zprp), the projected points are found as(from the pauline c graphics book)
+x(projected) = x(world) * (zprp - zv) / (zprp - z)
+y(projected) = y(world) * (zprp - zv) / (zprp - z)
+
+where zv is the position of view plane
+      	 |
+   .  	 |
+_____e___|______z-axis
+      	 |
+	 p
+	 |
+	 |
+	 view plane(z = zv)
+Fig. side view of the world space, where view plane z = zv is mapped to the y-axis
+'.' shown is the point that is being projected that is behind the eye
+e   is the eye
+p   is the projected point
+
+Notice that if any point behind the eye is projected onto the screen, we would obtain a flipped image.
+What happens if the point being projected is on z = zprp plane?
+
+In this case, we can't project the point onto the screen because the line drawn is parallel to the view plane, so no intersection and hence
+no projection is possible.
+
+So we need to prevent this from happening. Thus a preliminary Z clipping has to be done before projection is done. We could place
+our Z clipping plane anywhere infront of the eye position.
+
+For a line this can be done easily using algorithms described on the book, just solve the parametric equation of line and find the intersection with our z clipping plane.
+
+We could easily think of linearly interpolating the z values between the two points, but that would be wrong. 
+Linearity in world space does not guarantee us linearity in eye space.
+The formula for perspective projection:
+x(projected) = x(world) * (zprp - z) / (zprp - zv)
+y(projected) = y(world) * (zprp - z) / (zprp - zv)
+Lets simplify the equation assuming zprp = 0 and zv = 1;
+x(proj) = x(world) / z(world)
+y(proj) = y(world) /z(world)
+Suppose x1, y1, z1 and x2, y2, z2 are the two endpoints of a line in world space
+
+x - x1	     y - y1        z - z1
+------   =  --------  =   ---------
+x2 - x1      y2 - y1       z2 - z1
+
+Let's assume that we would get a linear relation between the projected points and the depth values. We need some formula that
+would give us the depth values in terms of the projected points and that formula should be linear.
+let us place x(world) = x(proj) * z(world) in the equation above,( similar for y)
+
+xp * zw - x1        yp * zw - y1         zw - z1
+-----------    =  ---------------  =   ----------
+x2 - x1             y2 - y1             z2 - z1
+
+where xp yp refer to the projected point on the screen and zw is the depth value in world space
+Now we need to derive a formula that would provide us zw value in terms of either xp or yp
+Let us take the first and the last ratio,
+
+xp * zw - x1           zw - z1
+----------    =    -------------
+dx                       dz
+
+or, xp * zw * dz - x1 * dz = zw * dx - z1 * dx
+or, zw * (xp * dz - dx) = x1 * dz - z1 * dx
+              (x1 * dz - z1 * dx)
+or, zw =       ------------------
+                 xp * dz - dx
+
+We see that zw is not linear with respect to xp(inversely proportional), i.e. we can't linearly interpolate in the eye space to obtain correct z values.
+But if we take the reciprocal of the equation obtained, we get,
+1            xp * dz - dx
+---    =    ----------------      = zw'
+zw            x1 * dz - z1 * dx
+
+which is linear
+Suppose we are interpolating across a scanline, the next point along the scanline is xp + 1,
+
+1                 (xp + 1) * dz -dx
+---------  =      -------------------
+zw(p + 1)         x1 * dz - z1 * dx
+
+subtracting two equations we get,
+
+1           1             dz
+---      - ---    =    -----------
+zw(p+1)    zw(p)        x1 * dz - z1 * dx
+
+zw'(p + 1) = zw'(p) + K
+where, K = dz / (x1 * dz - z1 * dx);
+So, we can interpolate the reciprocal of z values. Similar process is done for obtaining z interms of yp.
+
+MY DEPTH BUFFERING APPROACH
+
+ax + by + cz + d = 0;
+
+the equation of the plane / triangle we are rasterizing
+
+to obtain correct z value for points corresponding to xp and yp, we put the x and y values in terms of xp and yp
+
+x = x(proj) * (zprp - z) / (zprp - zv)
+y = y(proj) * (zprp - z) / (zprp - zv)
+
+place the x, y on the plane equation
+
+a * xp * (zprp - z) / (zprp - zv) + b * yp * (zprp - z) / (zprp - zv) + c * z + d = 0
+suppose zprp - zv = D
+==>    a * xp * (zprp - z) / D + b * yp * (zprp - z) / D + c * z = -d
+==>    a * xp * (zprp - z) + b * yp * (zprp - z) + c * z * D = -d * D
+==>    a * xp * zprp - a * xp * z + b * yp * zprp - b * yp * z + c * z * D = - d * D
+==>   a * xp * zprp + b * yp * zprp + d * D = (a * xp + b * yp + c * D) * z
+==>   z = (a * xp * zprp + b * yp * zprp + d * D) / (a * xp + b * yp + c * D)
+
+I used this formula that gives the depth value, given xp and yp, and the parameters of the plane a, b, c and d
+a, b, c can be computed from the normal of the plane and then d is obtained easily.
+Yeah, floating point division was used. IMO the difference would not be noticeable.
+
+TRIANGLE RASTERIZATION ALGORITHM
+-------------------------------------------------------------------------
+
+Just take the smallest bounding box that encloses the triangle, iterate through the each pixels on the box and do point inside triangle
+test to see if the pixel lies in the projected triangle.
+
+I had tried earlier using the bresenham's algorithm for triangle rasterization. The problem was that after splitting polygon into
+triangles, the edge that was common between any two triangles wouldnot be rendered properly.
