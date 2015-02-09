@@ -117,7 +117,7 @@ void clearZBuffer() {
     for (int j = 0; j < SCREEN_WIDTH; ++j) z_buffer[i][j] = 999999999.0; //infinity
   }
 }
-//draws a sphere of given radius centered at origin, uses spherical coordinates for calculating position of a point on the sphere
+//draws a sphere of given radius centered at given point, uses spherical coordinates for calculating position of a point on the sphere
 //look the sphere image file to see how it is done, turn up the pages of your EM book :D
 void drawSphere(SDL_Surface * screen, const Point & center, double radius, const Camera & cam) {
   int phi_steps = 20, theta_steps = 20;
