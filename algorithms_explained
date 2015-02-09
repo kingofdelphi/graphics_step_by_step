@@ -104,8 +104,8 @@ suppose zprp - zv = D
 ==>    a * xp * (zprp - z) / D + b * yp * (zprp - z) / D + c * z = -d
 ==>    a * xp * (zprp - z) + b * yp * (zprp - z) + c * z * D = -d * D
 ==>    a * xp * zprp - a * xp * z + b * yp * zprp - b * yp * z + c * z * D = - d * D
-==>   a * xp * zprp + b * yp * zprp + d * D = (a * xp + b * yp + c * D) * z
-==>   z = (a * xp * zprp + b * yp * zprp + d * D) / (a * xp + b * yp + c * D)
+==>   a * xp * zprp + b * yp * zprp + d * D = (a * xp + b * yp - c * D) * z
+==>   z = (a * xp * zprp + b * yp * zprp + d * D) / (a * xp + b * yp - c * D)
 
 I used this formula that gives the depth value, given xp and yp, and the parameters of the plane a, b, c and d
 a, b, c can be computed from the normal of the plane and then d is obtained easily.
