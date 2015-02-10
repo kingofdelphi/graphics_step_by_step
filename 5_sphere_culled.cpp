@@ -134,7 +134,7 @@ void drawSphere(SDL_Surface * screen, const Point & center, double radius, const
   //fps increases drastically if the number of surfaces is huge, try smoothing out the sphere and note the fps once when z culling is on
   //and another when z culling is off and compare them
   for (int i = 0; i < phi_steps; ++i) {
-    double theta = M_PI / 2.0;
+    double theta = -M_PI / 2.0;
     for (int j = 0; j < theta_steps; ++j) {
       Point a = r.rotateX(theta).rotateY(i * ang_phi);
       Point b = r.rotateX(theta).rotateY(i * ang_phi + ang_phi);
@@ -168,11 +168,11 @@ int main(int argc, char ** argv) {
     }
     //logic
     Uint8 *keys = SDL_GetKeyState(0);
-    if (keys[SDLK_a]) camera.phi += 0.1;
-    if (keys[SDLK_d]) camera.phi -= 0.1;
+    if (keys[SDLK_a]) camera.phi += 0.05;
+    if (keys[SDLK_d]) camera.phi -= 0.05;
     
-    if (keys[SDLK_q]) camera.theta += 0.1;
-    if (keys[SDLK_e]) camera.theta -= 0.1;
+    if (keys[SDLK_q]) camera.theta += 0.05;
+    if (keys[SDLK_e]) camera.theta -= 0.05;
     const int delta = 2;
     if (keys[SDLK_z]) camera.ze += delta, camera.zv += delta; //zoom in
     if (keys[SDLK_x]) camera.ze -= delta, camera.zv -= delta; //zoom out

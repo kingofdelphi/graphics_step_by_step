@@ -124,7 +124,7 @@ void drawSphere(SDL_Surface * screen, const Point & center, double radius, const
   double ang_phi = 2 * M_PI / phi_steps, ang_theta = M_PI / theta_steps;
   Point r(0, 0, radius);
   for (int i = 0; i < phi_steps; ++i) {
-    double theta = M_PI / 2.0;
+    double theta = -M_PI / 2.0;
     for (int j = 0; j < theta_steps; ++j) {
       Point a = r.rotateX(theta).rotateY(i * ang_phi);
       Point b = r.rotateX(theta).rotateY(i * ang_phi + ang_phi);
