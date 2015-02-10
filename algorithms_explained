@@ -27,7 +27,9 @@ our Z clipping plane anywhere infront of the eye position.
 
 For a line this can be done easily using algorithms described on the book, just solve the parametric equation of line and find the intersection with our z clipping plane.
 
-We could easily think of linearly interpolating the z values between the two points, but that would be wrong. 
+Z BUFFERING -----------------------------------------------------------------------------------------
+
+We could easily think of linearly interpolating the z values between the two points in terms of xp / yp, but that would be wrong. 
 Linearity in world space does not guarantee us linearity in eye space.
 The formula for perspective projection:
 x(projected) = x(world) * (zprp - z) / (zprp - zv)
