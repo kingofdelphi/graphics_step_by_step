@@ -43,7 +43,7 @@ struct Point {
     double nz = y * sin(t) + z * cos(t);
     return Point(x, ny, nz);
   }
-  //crude pipeling steps
+  //crude pipelining steps
 
   Point toVC(const Camera & cam) const; // defined after the definition of Camera struct
   Point project(const Camera & cam) const; //defined after the definition of Camera struct

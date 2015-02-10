@@ -33,7 +33,7 @@ struct Point {
     double nz = y * sin(t) + z * cos(t);
     return Point(x, ny, nz);
   }
-  //crude pipeling steps
+  //crude pipelining steps
   Point toVC(const Camera & cam) const {
     return rotateY(-cam.phi).rotateX(-cam.theta);
   }
