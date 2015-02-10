@@ -8,7 +8,12 @@ void setpixel(SDL_Surface * screen, int x, int y, Uint32 color) {
 }
 
 struct Camera {
-  double ze, zv, phi, theta, gama;
+  //ze is the eye position = zprp
+  //zv is the position of view plane
+  //phi, theta are spherical angles
+  //gama is used to rotate the world about z axis e.g. to see the world
+  //upside down gama is set to 180 degree
+  double ze, zv, phi, theta, gama; 
   Camera() : ze(-500), zv(-200), phi(0), theta(0), gama(0) { }
 };
 struct Point {
@@ -33,7 +38,7 @@ struct Point {
   }
   //crude pipeling steps
   Point toVC(const Camera & cam) const {
-    return rotateY(-cam.phi).rotateX(-cam.theta);
+    return rotateY(-cam.phi).rotateX(-cam.theta).rotateZ(-cam.gama);
   }
   Point project(const Camera & cam) const {
     double f = (cam.ze - cam.zv) / (cam.ze - z);
@@ -41,7 +46,7 @@ struct Point {
     return Point(xp, yp, cam.zv);
   }
   Point to2dview() const {
-    return Point(x + SCREEN_HEIGHT / 2, y + SCREEN_HEIGHT / 2, z);
+    return Point(x + SCREEN_WIDTH / 2, y + SCREEN_HEIGHT / 2, z);
   }
   //vector math
   Point operator-(const Point & b) const {
@@ -117,6 +122,10 @@ int main(int argc, char ** argv) {
     
     if (keys[SDLK_q]) camera.theta += 0.1;
     if (keys[SDLK_e]) camera.theta -= 0.1;
+    
+    if (keys[SDLK_LEFT]) camera.gama += 0.1;
+    if (keys[SDLK_RIGHT]) camera.gama -= 0.1;
+    
     const int delta = 2;
     if (keys[SDLK_z]) camera.ze += delta, camera.zv += delta; //zoom in
     if (keys[SDLK_x]) camera.ze -= delta, camera.zv -= delta; //zoom out
