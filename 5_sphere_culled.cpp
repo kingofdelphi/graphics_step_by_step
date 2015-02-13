@@ -168,11 +168,11 @@ int main(int argc, char ** argv) {
     }
     //logic
     Uint8 *keys = SDL_GetKeyState(0);
-    if (keys[SDLK_a]) camera.phi += 0.05;
-    if (keys[SDLK_d]) camera.phi -= 0.05;
+    if (keys[SDLK_a]) camera.phi += 0.01;
+    if (keys[SDLK_d]) camera.phi -= 0.01;
     
-    if (keys[SDLK_q]) camera.theta += 0.05;
-    if (keys[SDLK_e]) camera.theta -= 0.05;
+    if (keys[SDLK_q]) camera.theta += 0.01;
+    if (keys[SDLK_e]) camera.theta -= 0.01;
     const int delta = 2;
     if (keys[SDLK_z]) camera.ze += delta, camera.zv += delta; //zoom in
     if (keys[SDLK_x]) camera.ze -= delta, camera.zv -= delta; //zoom out
