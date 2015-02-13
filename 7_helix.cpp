@@ -133,32 +133,6 @@ struct Triangle {
 		triangleFill(screen, a, b, c, color, cam);
 	}
 };
-struct Cuboid {
-	Point a, b, c, d, e, f, g, h;
-	Cuboid(double ox, double oy, double oz, double length, double breadth, double height) {
-		a = Point(ox, oy, oz);
-		b = Point(ox + length, oy, oz);
-		c = Point(ox + length, oy + breadth, oz);
-		d = Point(ox, oy + breadth, oz);
-		e = Point(ox, oy, oz + height);
-		f = Point(ox + length, oy, oz + height);
-		g = Point(ox + length, oy + breadth, oz + height);
-		h = Point(ox, oy + breadth, oz + height);
-	}
-	void draw(SDL_Surface * screen, const Camera & cam) const {
-		triangleFill(screen, a, b, c, 0xff0000, cam);
-		triangleFill(screen, a, d, c, 0xff0000, cam);
-		triangleFill(screen, e, f, g, 0x00ff00, cam);
-		triangleFill(screen, e, h, g, 0x00ff00, cam);
-		triangleFill(screen, a, d, e, 0xff00ff, cam);
-		triangleFill(screen, h, d, e, 0xff00ff, cam);
-		triangleFill(screen, b, f, g, 0, cam);
-		triangleFill(screen, c, b, g, 0, cam);
-		triangleFill(screen, a, e, b, 0x0000ff, cam);
-		triangleFill(screen, e, b, f, 0x0000ff, cam);
-	}
-
-};
 void drawGridLines(SDL_Surface * screen, const Camera & cam) {
 	double box_size = 50;
 	static const double ZL = 500;
@@ -175,7 +149,7 @@ void drawGridLines(SDL_Surface * screen, const Camera & cam) {
 void drawHelix(SDL_Surface * screen, const Camera & cam, double height, const Point & p, Uint32 cola, Uint32 colb, double theta = 0) {
 	//number of steps required to complete one revolution around the helix surface
 	int steps = 20;
-	//number of steps required to complete one rotation around the inner radius of the helix
+	//smoothness of the helix thread
 	int rad_steps = 10;
 
 	double step_angle = 2 * M_PI / steps;
@@ -224,7 +198,6 @@ int main(int argc, char ** argv) {
 	SDL_Event event;
 	bool run = 1;
 	Camera camera;
-	Cuboid cb(0, 0, 0, 50, -50, 100);
 	double phi = 0;
 	while (run) {
 		while (SDL_PollEvent(&event)) {
