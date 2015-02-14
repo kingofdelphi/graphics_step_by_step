@@ -147,7 +147,7 @@ void drawGridLines(SDL_Surface * screen, const Camera & cam) {
 
 }
 //helix is basically giving increasing height to each segment of a torus
-//, so the implementation of torus and helix are nearly the same
+//, so the implementations of torus and helix are nearly the same
 void drawTorus(SDL_Surface * screen, const Camera & cam, double height, const Point & p, Uint32 cola, Uint32 colb) {
 	int steps = 20;
 	int rad_steps = 20;
