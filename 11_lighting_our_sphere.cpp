@@ -341,7 +341,6 @@ int main(int argc, char ** argv) {
     Point sphere_center(-200, -350, 0);
     double ballyvel = 0, ballxvel = 1;
     double gravity = 0.4;
-    int dir = 1; //1 for down, -1 for up
     double restitution = 0.8;
     while (run) {
         while (SDL_PollEvent(&event)) {
@@ -357,14 +356,10 @@ int main(int argc, char ** argv) {
                 ballyvel = -ballyvel * restitution;
                 if (int(ballyvel) == 0) {
                     ballxvel = 0;
+                    ballyvel = 0;
                 }
             }
-        } else {
-            if (int(ballyvel) == 0) {
-                ballyvel = 0;
-            }
-        }
-
+        } 
         //
         Uint8 *keys = SDL_GetKeyState(0);
         if (keys[SDLK_a]) camera.phi += 0.1;

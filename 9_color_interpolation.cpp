@@ -141,7 +141,6 @@ void triangleFill(SDL_Surface * screen, Point a, Point b, Point c, const Camera 
     if (pa.y > pb.y) swap(pa, pb);
     if (pb.y > pc.y) swap(pb, pc);
     if (pa.y > pb.y) swap(pa, pb);
-    if (pa.y == pc.y) return ;
     double miny = pa.y;
     double maxy = pc.y;
     double minx = min(pa.x, min(pb.x, pc.x));
