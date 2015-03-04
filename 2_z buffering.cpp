@@ -86,7 +86,9 @@ void triangleFill(SDL_Surface * screen, const Point & a, const Point & b, const 
   Point pa = vca.project(cam).to2dview(), pb = vcb.project(cam).to2dview(), pc = vcc.project(cam).to2dview();
   double minx = min(pa.x, min(pb.x, pc.x)), miny = min(pa.y, min(pb.y, pc.y));
   double maxx = max(pa.x, max(pb.x, pc.x)), maxy = max(pa.y, max(pb.y, pc.y));
-  
+    pa.y = int(pa.y);
+    pb.y = int(pb.y);
+    pc.y = int(pc.y);
   for (int i = miny; i <= maxy; ++i) {
     if (i < 0) continue;
     if (i >= SCREEN_HEIGHT) break;
