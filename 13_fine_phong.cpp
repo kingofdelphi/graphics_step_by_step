@@ -242,7 +242,6 @@ void drawSphere(SDL_Surface * screen, const Point & center, double radius, const
     Point vertices[phi_steps + 1][theta_steps + 1];
     double ang_phi = 2 * M_PI / phi_steps, ang_theta = M_PI / theta_steps;
     Point r(0, 0, radius);
-    //first compute all vertex positions
     for (int i = 0; i <= phi_steps; ++i) {
         double theta = -M_PI / 2.0;
         for (int j = 0; j <= theta_steps; ++j) {
@@ -250,7 +249,6 @@ void drawSphere(SDL_Surface * screen, const Point & center, double radius, const
             theta += ang_theta;
         }
     }
-    //now compute the sum of normals
     Point normal[phi_steps + 1][theta_steps + 1];
     for (int i = 0; i < phi_steps; ++i) {
         for (int j = 0; j < theta_steps; ++j) {
@@ -261,9 +259,6 @@ void drawSphere(SDL_Surface * screen, const Point & center, double radius, const
             normal[i + 1][j + 1] = normal[i + 1][j + 1] + norm;
         }
     }
-    //apply illumination model at each vertex
-    Color ambient(0.2, 0.2, 0.2);
-    //now we can just interpolate the intensities at the vertices, which is done by our triangle filling function
     for (int i = 0; i < phi_steps; ++i) {
         for (int j = 0; j < theta_steps; ++j) {
             Point norm = (vertices[i][j + 1] - vertices[i][j]).cross(vertices[i + 1][j] - vertices[i][j]);
