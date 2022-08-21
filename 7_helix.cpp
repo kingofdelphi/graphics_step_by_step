@@ -1,7 +1,12 @@
 #include <SDL2/SDL.h>
 #include <cmath>
 #include <algorithm>
+#ifdef EMSCRIPTEN
+ #include <emscripten.h>
+#endif
+
 using namespace std;
+
 const int SCREEN_WIDTH = 640, SCREEN_HEIGHT = 480;
 void setpixel(SDL_Surface * screen, int x, int y, Uint32 color) {
 	if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) return ;
@@ -192,39 +197,61 @@ void clearZBuffer() {
 	}
 }
 
-int main(int argc, char ** argv) {
-	SDL_Init(SDL_INIT_EVERYTHING);
- 	SDL_Window* window = SDL_CreateWindow("Graphics 3d", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
-	SDL_Surface *screen = SDL_GetWindowSurface(window);
-	SDL_Event event;
-	bool run = 1;
-	Camera camera;
-	double phi = 0;
-	while (run) {
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) run = 0;
-		}
-		//logic
-		const Uint8 *keys = SDL_GetKeyboardState(0);
-		if (keys[SDL_SCANCODE_A]) camera.phi += 0.1;
-		if (keys[SDL_SCANCODE_D]) camera.phi -= 0.1;
+SDL_Window *window;
+SDL_Surface *screen;
+SDL_Event event;
+bool run = 1;
+Camera camera;
+double phi = 0;
 
-		if (keys[SDL_SCANCODE_Q]) camera.theta += 0.1;
-		if (keys[SDL_SCANCODE_E]) camera.theta -= 0.1;
-		const int delta = 2;
-		if (keys[SDL_SCANCODE_Z]) camera.ze += delta, camera.zv += delta; //zoom in
-		if (keys[SDL_SCANCODE_X]) camera.ze -= delta, camera.zv -= delta; //zoom out
-		if (keys[SDLK_SPACE]) phi += 0.1;
-
-		//rendering
-		SDL_FillRect(screen, &screen->clip_rect, 0xFFFFFF);
-		clearZBuffer();
-		drawGridLines(screen, camera);
-		drawHelix(screen, camera, 300, Point(0, 0, 0), 0xFF0000, 0x00FF00, phi);
-		drawHelix(screen, camera, 300, Point(0, 0, 0), 0x0000FF, 0, phi + M_PI);
-		SDL_UpdateWindowSurface(window);
-		SDL_Delay(10);
+void main_loop() {
+	while (SDL_PollEvent(&event))
+	{
+		if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
+			run = 0;
 	}
-	SDL_Quit();
-	return 0;
+	//logic
+	const Uint8 *keys = SDL_GetKeyboardState(0);
+	if (keys[SDL_SCANCODE_A])
+		camera.phi += 0.1;
+	if (keys[SDL_SCANCODE_D])
+		camera.phi -= 0.1;
+
+	if (keys[SDL_SCANCODE_Q])
+		camera.theta += 0.1;
+	if (keys[SDL_SCANCODE_E])
+		camera.theta -= 0.1;
+	const int delta = 2;
+	if (keys[SDL_SCANCODE_Z])
+		camera.ze += delta, camera.zv += delta; //zoom in
+	if (keys[SDL_SCANCODE_X])
+		camera.ze -= delta, camera.zv -= delta; //zoom out
+	if (keys[SDLK_SPACE])
+		phi += 0.1;
+
+	//rendering
+	SDL_FillRect(screen, &screen->clip_rect, 0xFFFFFF);
+	clearZBuffer();
+	drawGridLines(screen, camera);
+	drawHelix(screen, camera, 300, Point(0, 0, 0), 0xFF0000, 0x00FF00, phi);
+	drawHelix(screen, camera, 300, Point(0, 0, 0), 0x0000FF, 0, phi + M_PI);
+	SDL_UpdateWindowSurface(window);
+	SDL_Delay(10);
+}
+
+int main(int argc, char **argv)
+{
+  SDL_Init(SDL_INIT_EVERYTHING);
+  window = SDL_CreateWindow("Graphics 3d", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+  screen = SDL_GetWindowSurface(window);
+
+  #ifdef EMSCRIPTEN
+    emscripten_set_main_loop(main_loop, 0, 1);
+  #else
+    while (run) {
+  	  main_loop();
+    }
+  #endif
+  SDL_Quit();
+  return 0;
 }

@@ -9,6 +9,9 @@
 #ifdef EMSCRIPTEN
  #include <emscripten.h>
 #endif
+#ifdef EMSCRIPTEN
+ #include <emscripten.h>
+#endif
 using namespace std;
 const int SCREEN_WIDTH = 640, SCREEN_HEIGHT = 480;
 
