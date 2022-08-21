@@ -2,7 +2,7 @@
 //you'll have to interpolate the color as well during clipping if color information is
 //different for each vertex but that would be trivial to implement(shown later) 
 //
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 #include <cmath>
 #include <algorithm>
 #include <iostream>
@@ -244,7 +244,8 @@ void clearZBuffer() {
 
 int main(int argc, char ** argv) {
   SDL_Init(SDL_INIT_EVERYTHING);
-  SDL_Surface * screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 32, SDL_SWSURFACE);
+ 	SDL_Window* window = SDL_CreateWindow("Graphics 3d", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+  SDL_Surface *screen = SDL_GetWindowSurface(window);
   SDL_Event event;
   bool run = 1;
   Camera camera;
@@ -255,20 +256,20 @@ int main(int argc, char ** argv) {
       if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) run = 0;
     }
     //logic
-    Uint8 *keys = SDL_GetKeyState(0);
-    if (keys[SDLK_a]) camera.phi += 0.01;
-    if (keys[SDLK_d]) camera.phi -= 0.01;
+    const Uint8 *keys = SDL_GetKeyboardState(0);
+    if (keys[SDL_SCANCODE_A]) camera.phi += 0.01;
+    if (keys[SDL_SCANCODE_D]) camera.phi -= 0.01;
     
-    if (keys[SDLK_q]) camera.theta -= 0.01;
-    if (keys[SDLK_e]) camera.theta += 0.01;
+    if (keys[SDL_SCANCODE_Q]) camera.theta -= 0.01;
+    if (keys[SDL_SCANCODE_E]) camera.theta += 0.01;
     const int delta = 2;
 
     //how far is the camera's projection plane / screen from the lookAt point
-    if (keys[SDLK_z]) camera.ze += delta, camera.zv += delta; //zoom in
-    if (keys[SDLK_x]) camera.ze -= delta, camera.zv -= delta; //zoom out
+    if (keys[SDL_SCANCODE_Z]) camera.ze += delta, camera.zv += delta; //zoom in
+    if (keys[SDL_SCANCODE_X]) camera.ze -= delta, camera.zv -= delta; //zoom out
     //basic scene navigation
-    if (keys[SDLK_w]) camera.moveLookAt(4); //move forward
-    if (keys[SDLK_s]) camera.moveLookAt(-4);//move backward
+    if (keys[SDL_SCANCODE_W]) camera.moveLookAt(4); //move forward
+    if (keys[SDL_SCANCODE_S]) camera.moveLookAt(-4);//move backward
     
     
     //rendering
@@ -277,7 +278,7 @@ int main(int argc, char ** argv) {
     drawGridLines(screen, camera);
     cb.draw(screen, camera);
     cb2.draw(screen, camera);
-    SDL_Flip(screen);
+    SDL_UpdateWindowSurface(window);
   }
   SDL_Quit();
   return 0;

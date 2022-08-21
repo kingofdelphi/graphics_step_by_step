@@ -1,4 +1,4 @@
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 #include <cmath>
 #include <algorithm>
 using namespace std;
@@ -139,31 +139,33 @@ void drawSphere(SDL_Surface * screen, const Point & center, double radius, const
 
 int main(int argc, char ** argv) {
   SDL_Init(SDL_INIT_EVERYTHING);
-  SDL_Surface * screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 32, SDL_SWSURFACE);
+ 	SDL_Window* window = SDL_CreateWindow("Graphics 3d", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+  SDL_Surface *screen = SDL_GetWindowSurface(window);
   SDL_Event event;
+
   bool run = 1;
   Camera camera;
+  const Uint8 *keys = SDL_GetKeyboardState(0);
 
   while (run) {
     while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) run = 0;
+      if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDL_SCANCODE_ESCAPE)) run = 0;
     }
     //logic
-    Uint8 *keys = SDL_GetKeyState(0);
-    if (keys[SDLK_a]) camera.phi += 0.1;
-    if (keys[SDLK_d]) camera.phi -= 0.1;
+    if (keys[SDL_SCANCODE_A]) camera.phi += 0.1;
+    if (keys[SDL_SCANCODE_D]) camera.phi -= 0.1;
     
-    if (keys[SDLK_q]) camera.theta += 0.1;
-    if (keys[SDLK_e]) camera.theta -= 0.1;
+    if (keys[SDL_SCANCODE_Q]) camera.theta += 0.1;
+    if (keys[SDL_SCANCODE_E]) camera.theta -= 0.1;
     const int delta = 2;
-    if (keys[SDLK_z]) camera.ze += delta, camera.zv += delta; //zoom in
-    if (keys[SDLK_x]) camera.ze -= delta, camera.zv -= delta; //zoom out
+    if (keys[SDL_SCANCODE_Z]) camera.ze += delta, camera.zv += delta; //zoom in
+    if (keys[SDL_SCANCODE_X]) camera.ze -= delta, camera.zv -= delta; //zoom out
     
     //rendering
     SDL_FillRect(screen, &screen->clip_rect, 0xFFFFFF);
     clearZBuffer();
     drawSphere(screen, Point(0, 0, 0), 100, camera);
-    SDL_Flip(screen);
+    SDL_UpdateWindowSurface(window);
   }
   SDL_Quit();
   return 0;

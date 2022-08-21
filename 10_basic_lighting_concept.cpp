@@ -1,4 +1,4 @@
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 #include <cmath>
 #include <algorithm>
 #include <iostream>
@@ -312,7 +312,8 @@ void clearZBuffer() {
 
 int main(int argc, char ** argv) {
     SDL_Init(SDL_INIT_EVERYTHING);
-    SDL_Surface * screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 32, SDL_SWSURFACE);
+ 	SDL_Window* window = SDL_CreateWindow("Graphics 3d", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+	SDL_Surface *screen = SDL_GetWindowSurface(window);
     SDL_Event event;
     bool run = 1;
     Cuboid cb(0, 0, 0, 50, -50, 100, Color(1, 0, 0), Color(1, 0, 0), Color(1, 0, 0), Color(1, 0, 0), Color(1, 0, 0), Color(1, 0, 0), Color(1, 0, 0), Color(1, 0, 0));
@@ -321,17 +322,17 @@ int main(int argc, char ** argv) {
             if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)) run = 0;
         }
         //logic
-        Uint8 *keys = SDL_GetKeyState(0);
-        if (keys[SDLK_a]) camera.phi += 0.1;
-        if (keys[SDLK_d]) camera.phi -= 0.1;
+        const Uint8 *keys = SDL_GetKeyboardState(0);
+        if (keys[SDL_SCANCODE_A]) camera.phi += 0.1;
+        if (keys[SDL_SCANCODE_D]) camera.phi -= 0.1;
 
-        if (keys[SDLK_q]) camera.theta += 0.1;
-        if (keys[SDLK_e]) camera.theta -= 0.1;
+        if (keys[SDL_SCANCODE_Q]) camera.theta += 0.1;
+        if (keys[SDL_SCANCODE_E]) camera.theta -= 0.1;
         const int delta = 2;
-        if (keys[SDLK_z]) camera.ze += delta, camera.zv += delta; //zoom in
-        if (keys[SDLK_x]) camera.ze -= delta, camera.zv -= delta; //zoom out
-        if (keys[SDLK_k]) light_source.position.z += 1;
-        if (keys[SDLK_j]) light_source.position.z -= 1;
+        if (keys[SDL_SCANCODE_Z]) camera.ze += delta, camera.zv += delta; //zoom in
+        if (keys[SDL_SCANCODE_X]) camera.ze -= delta, camera.zv -= delta; //zoom out
+        if (keys[SDL_SCANCODE_K]) light_source.position.z += 1;
+        if (keys[SDL_SCANCODE_J]) light_source.position.z -= 1;
 
         //rendering
         SDL_FillRect(screen, &screen->clip_rect, 0);
@@ -340,7 +341,7 @@ int main(int argc, char ** argv) {
         Cuboid lght(light_source.position.x, light_source.position.y, light_source.position.z, 5, -5, 5, Color(0, 1, 0), Color(1, 0, 1), Color(1, 0, 0), Color(1, 0, 0), Color(1, 0, 0), Color(1, 0, 0), Color(1, 0, 0), Color(1, 0, 0));
         lght.draw(screen, camera);
 
-        SDL_Flip(screen);
+        SDL_UpdateWindowSurface(window);
         SDL_Delay(10);
     }
     SDL_Quit();
